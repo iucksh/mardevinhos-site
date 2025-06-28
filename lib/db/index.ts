@@ -1,12 +1,15 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
 import * as schema from './schema';
 
-const sqlite = new Database('./database.sqlite');
-export const db = drizzle(sqlite, { schema });
+const client = createClient({
+    url: 'file:database.sqlite'
+});
+
+export const db = drizzle(client, { schema });
 
 // Criar tabelas se não existirem
-sqlite.exec(`
+await client.execute(`
     CREATE TABLE IF NOT EXISTS appointments (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
