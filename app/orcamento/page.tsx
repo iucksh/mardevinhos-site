@@ -4,105 +4,63 @@ import { useState } from 'react';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
 
-export default function AgendarPage() {
-    const [selectedDate, setSelectedDate] = useState('');
-    const [selectedTime, setSelectedTime] = useState('');
+export default function OrcamentoPage() {
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
         telefone: '',
         empresa: '',
         tipo: '',
-        observacoes: '',
+        descricao: '',
+        orcamento: '',
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const availableTimes = [
-        '09:00',
-        '09:30',
-        '10:00',
-        '10:30',
-        '11:00',
-        '11:30',
-        '14:00',
-        '14:30',
-        '15:00',
-        '15:30',
-        '16:00',
-        '16:30',
-        '17:00',
-    ];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/appointments', {
+            const response = await fetch('/api/quotes', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    ...formData,
-                    selectedDate,
-                    selectedTime,
-                }),
+                body: JSON.stringify(formData),
             });
 
             const data = await response.json();
 
             if (data.success) {
-                toast.success('Reunião agendada com sucesso! Você receberá um e-mail de confirmação em breve.');
+                toast.success('Solicitação enviada com sucesso! Entraremos em contato em breve.');
                 setFormData({
                     nome: '',
                     email: '',
                     telefone: '',
                     empresa: '',
                     tipo: '',
-                    observacoes: '',
+                    descricao: '',
+                    orcamento: '',
                 });
-                setSelectedDate('');
-                setSelectedTime('');
             } else {
-                toast.error(data.error || 'Erro ao agendar reunião');
+                toast.error(data.error || 'Erro ao enviar solicitação');
             }
         } catch (error) {
-            toast.error('Erro ao agendar reunião');
+            toast.error('Erro ao enviar solicitação');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
     };
-
-    // Gerar próximos 30 dias úteis
-    const getAvailableDates = () => {
-        const dates = [];
-        const today = new Date();
-        let currentDate = new Date(today);
-        currentDate.setDate(currentDate.getDate() + 1); // Começar amanhã
-
-        while (dates.length < 30) {
-            const dayOfWeek = currentDate.getDay();
-            // Apenas dias úteis (1-5 = Segunda a Sexta)
-            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-                dates.push(new Date(currentDate));
-            }
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        return dates;
-    };
-
-    const availableDates = getAvailableDates();
 
     return (
         <div className="min-h-screen">
@@ -112,14 +70,13 @@ export default function AgendarPage() {
             <section className="max-w-4xl mx-auto px-8 py-16">
                 <div className="text-center mb-16">
                     <h1 className="text-5xl md:text-6xl font-light leading-tight mb-8">
-                        Agendar{' '}
+                        Solicitar{' '}
                         <span className="text-teal-300">
-                            Reunião
+                            Orçamento
                         </span>
                     </h1>
                     <p className="text-xl text-purple-200 max-w-3xl mx-auto leading-relaxed">
-                        Agende uma consulta gratuita de 30 minutos para discutir como podemos
-                        transformar sua carta de vinhos e aumentar sua lucratividade.
+                        Conte-nos sobre seu projeto e receba uma proposta personalizada para transformar sua carta de vinhos.
                     </p>
                 </div>
 
@@ -127,16 +84,16 @@ export default function AgendarPage() {
                 <div className="grid md:grid-cols-3 gap-6 mb-12">
                     {[
                         {
-                            icon: '🆓',
-                            title: 'Consulta Gratuita',
-                            desc: '30 minutos sem compromisso',
+                            icon: '💰',
+                            title: 'Orçamento Gratuito',
+                            desc: 'Proposta sem compromisso',
                         },
                         {
-                            icon: '📊',
-                            title: 'Análise Personalizada',
-                            desc: 'Diagnóstico do seu negócio',
+                            icon: '⚡',
+                            title: 'Resposta Rápida',
+                            desc: 'Retorno em até 24 horas',
                         },
-                        { icon: '💡', title: 'Soluções Práticas', desc: 'Estratégias aplicáveis' },
+                        { icon: '🎯', title: 'Solução Personalizada', desc: 'Adaptada ao seu negócio' },
                     ].map((benefit, index) => (
                         <div
                             key={index}
@@ -155,7 +112,7 @@ export default function AgendarPage() {
                     ))}
                 </div>
 
-                {/* Scheduling Form */}
+                {/* Quote Form */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8">
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Personal Info */}
@@ -209,13 +166,12 @@ export default function AgendarPage() {
                                         htmlFor="telefone"
                                         className="block text-sm font-medium text-purple-200 mb-2"
                                     >
-                                        Telefone *
+                                        Telefone
                                     </label>
                                     <input
                                         type="tel"
                                         id="telefone"
                                         name="telefone"
-                                        required
                                         value={formData.telefone}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:border-teal-300"
@@ -282,106 +238,82 @@ export default function AgendarPage() {
                             </div>
                         </div>
 
-                        {/* Date Selection */}
+                        {/* Project Details */}
                         <div>
                             <h2 className="text-2xl font-light mb-6 text-teal-300">
-                                Escolha a Data
+                                Detalhes do Projeto
                             </h2>
 
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                                {availableDates.slice(0, 15).map((date, index) => {
-                                    const dateStr = date.toISOString().split('T')[0];
-                                    const dayName = date.toLocaleDateString('pt-BR', {
-                                        weekday: 'short',
-                                    });
-                                    const dayNumber = date.getDate();
-                                    const monthName = date.toLocaleDateString('pt-BR', {
-                                        month: 'short',
-                                    });
-
-                                    return (
-                                        <button
-                                            key={index}
-                                            type="button"
-                                            onClick={() => setSelectedDate(dateStr)}
-                                            className={`p-3 rounded-lg text-center transition-all duration-300 ${
-                                                selectedDate === dateStr
-                                                    ? 'bg-teal-500 text-white'
-                                                    : 'bg-white/20 text-purple-200 hover:bg-white/30'
-                                            }`}
-                                        >
-                                            <div className="text-xs uppercase">
-                                                {dayName}
-                                            </div>
-                                            <div className="text-lg font-semibold">
-                                                {dayNumber}
-                                            </div>
-                                            <div className="text-xs">
-                                                {monthName}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
+                            <div className="mb-6">
+                                <label
+                                    htmlFor="descricao"
+                                    className="block text-sm font-medium text-purple-200 mb-2"
+                                >
+                                    Descrição do Projeto *
+                                </label>
+                                <textarea
+                                    id="descricao"
+                                    name="descricao"
+                                    required
+                                    rows={5}
+                                    value={formData.descricao}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:border-teal-300 resize-none"
+                                    placeholder="Descreva detalhadamente seu projeto, necessidades e objetivos..."
+                                />
                             </div>
-                        </div>
 
-                        {/* Time Selection */}
-                        {selectedDate && (
                             <div>
-                                <h2 className="text-2xl font-light mb-6 text-teal-300">
-                                    Escolha o Horário
-                                </h2>
-
-                                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                                    {availableTimes.map((time, index) => (
-                                        <button
-                                            key={index}
-                                            type="button"
-                                            onClick={() => setSelectedTime(time)}
-                                            className={`p-3 rounded-lg text-center transition-all duration-300 ${
-                                                selectedTime === time
-                                                    ? 'bg-teal-500 text-white'
-                                                    : 'bg-white/20 text-purple-200 hover:bg-white/30'
-                                            }`}
-                                        >
-                                            {time}
-                                        </button>
-                                    ))}
-                                </div>
+                                <label
+                                    htmlFor="orcamento"
+                                    className="block text-sm font-medium text-purple-200 mb-2"
+                                >
+                                    Orçamento Estimado (Opcional)
+                                </label>
+                                <select
+                                    id="orcamento"
+                                    name="orcamento"
+                                    value={formData.orcamento}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-lg bg-white/20 text-white border border-white/30 focus:outline-none focus:border-teal-300"
+                                >
+                                    <option value="">
+                                        Selecione uma faixa
+                                    </option>
+                                    <option value="ate-5k">
+                                        Até R$ 5.000
+                                    </option>
+                                    <option value="5k-15k">
+                                        R$ 5.000 - R$ 15.000
+                                    </option>
+                                    <option value="15k-30k">
+                                        R$ 15.000 - R$ 30.000
+                                    </option>
+                                    <option value="30k-50k">
+                                        R$ 30.000 - R$ 50.000
+                                    </option>
+                                    <option value="acima-50k">
+                                        Acima de R$ 50.000
+                                    </option>
+                                    <option value="a-definir">
+                                        A definir
+                                    </option>
+                                </select>
                             </div>
-                        )}
-
-                        {/* Additional Info */}
-                        <div>
-                            <label
-                                htmlFor="observacoes"
-                                className="block text-sm font-medium text-purple-200 mb-2"
-                            >
-                                Observações (Opcional)
-                            </label>
-                            <textarea
-                                id="observacoes"
-                                name="observacoes"
-                                rows={3}
-                                value={formData.observacoes}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:border-teal-300 resize-none"
-                                placeholder="Conte-nos brevemente sobre seus desafios ou objetivos..."
-                            />
                         </div>
 
                         {/* Submit Button */}
                         <div className="text-center">
                             <button
                                 type="submit"
-                                disabled={!selectedDate || !selectedTime || isSubmitting}
+                                disabled={isSubmitting}
                                 className="px-12 py-4 bg-teal-500 text-white rounded-full hover:bg-teal-400 transition-colors text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isSubmitting ? 'Agendando...' : 'Confirmar Agendamento'}
+                                {isSubmitting ? 'Enviando...' : 'Solicitar Orçamento'}
                             </button>
 
                             <p className="text-purple-300 text-sm mt-4">
-                                Você receberá um e-mail de confirmação com o link da reunião online.
+                                Você receberá uma proposta personalizada em até 24 horas.
                             </p>
                         </div>
                     </form>

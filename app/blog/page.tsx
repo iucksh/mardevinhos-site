@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function BlogPage() {
     const [selectedCategory, setSelectedCategory] = useState('todos');
+    const [email, setEmail] = useState('');
+    const [isSubscribing, setIsSubscribing] = useState(false);
 
     const categories = [
         { id: 'todos', name: 'Todos os Posts' },
@@ -106,31 +109,55 @@ export default function BlogPage() {
     const featuredPost = posts.find((post) => post.featured);
     const regularPosts = posts.filter((post) => !post.featured);
 
+    const handleNewsletterSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubscribing(true);
+
+        try {
+            const response = await fetch('/api/newsletter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success('Inscrição realizada com sucesso! Verifique seu e-mail.');
+                setEmail('');
+            } else {
+                toast.error(data.error || 'Erro ao realizar inscrição');
+            }
+        } catch (error) {
+            toast.error('Erro ao realizar inscrição');
+        } finally {
+            setIsSubscribing(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen" data-oid="_.m44_8">
+        <div className="min-h-screen">
+            <Toaster position="top-right" />
+            
             {/* Hero Section */}
-            <section className="max-w-6xl mx-auto px-8 py-16" data-oid="0y9:6va">
-                <div className="text-center mb-16" data-oid="5iqsydl">
-                    <h1
-                        className="text-5xl md:text-6xl font-light leading-tight mb-8"
-                        data-oid="z.usual"
-                    >
+            <section className="max-w-6xl mx-auto px-8 py-16">
+                <div className="text-center mb-16">
+                    <h1 className="text-5xl md:text-6xl font-light leading-tight mb-8">
                         Blog{' '}
-                        <span className="text-teal-300" data-oid="364tnxc">
+                        <span className="text-teal-300">
                             Mar de Vinhos
                         </span>
                     </h1>
-                    <p
-                        className="text-xl text-purple-200 max-w-3xl mx-auto leading-relaxed"
-                        data-oid="5jta4n."
-                    >
+                    <p className="text-xl text-purple-200 max-w-3xl mx-auto leading-relaxed">
                         Insights, tendências e conhecimento especializado sobre o mercado de vinhos
                         e o setor HORECA. Conteúdo exclusivo para profissionais do setor.
                     </p>
                 </div>
 
                 {/* Categories Filter */}
-                <div className="flex flex-wrap justify-center gap-4 mb-12" data-oid="dc2xbdz">
+                <div className="flex flex-wrap justify-center gap-4 mb-12">
                     {categories.map((category) => (
                         <button
                             key={category.id}
@@ -140,7 +167,6 @@ export default function BlogPage() {
                                     ? 'bg-teal-500 text-white'
                                     : 'bg-white/10 text-purple-200 hover:bg-white/20'
                             }`}
-                            data-oid="wne::rf"
                         >
                             {category.name}
                         </button>
@@ -149,42 +175,32 @@ export default function BlogPage() {
 
                 {/* Featured Post */}
                 {selectedCategory === 'todos' && featuredPost && (
-                    <div
-                        className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 mb-12"
-                        data-oid="_:ycdo1"
-                    >
-                        <div className="grid md:grid-cols-2 gap-8 items-center" data-oid="muu7tp.">
-                            <div data-oid="wq7d1gv">
-                                <div className="flex items-center gap-4 mb-4" data-oid="pp42niy">
-                                    <span
-                                        className="px-3 py-1 bg-teal-500 text-white text-xs rounded-full"
-                                        data-oid="ysbwrso"
-                                    >
+                    <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 mb-12">
+                        <div className="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <span className="px-3 py-1 bg-teal-500 text-white text-xs rounded-full">
                                         DESTAQUE
                                     </span>
-                                    <span className="text-purple-300 text-sm" data-oid="f_zd1vr">
+                                    <span className="text-purple-300 text-sm">
                                         {featuredPost.date} • {featuredPost.readTime} de leitura
                                     </span>
                                 </div>
-                                <h2
-                                    className="text-3xl font-light mb-4 text-teal-300"
-                                    data-oid="kf-la60"
-                                >
+                                <h2 className="text-3xl font-light mb-4 text-teal-300">
                                     {featuredPost.title}
                                 </h2>
-                                <p className="text-purple-200 mb-6" data-oid="q0j:g51">
+                                <p className="text-purple-200 mb-6">
                                     {featuredPost.excerpt}
                                 </p>
                                 <Link
                                     href={`/blog/${featuredPost.id}`}
                                     className="inline-block px-6 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-400 transition-colors"
-                                    data-oid="ljy.ewm"
                                 >
                                     Ler Artigo Completo
                                 </Link>
                             </div>
-                            <div className="text-center" data-oid="bcp:e6k">
-                                <div className="text-8xl mb-4" data-oid="c_uwiqw">
+                            <div className="text-center">
+                                <div className="text-8xl mb-4">
                                     {featuredPost.image}
                                 </div>
                             </div>
@@ -193,43 +209,35 @@ export default function BlogPage() {
                 )}
 
                 {/* Posts Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20" data-oid="lg3._oz">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
                     {(selectedCategory === 'todos' ? regularPosts : filteredPosts).map((post) => (
                         <article
                             key={post.id}
                             className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300"
-                            data-oid="p-24ook"
                         >
-                            <div className="text-4xl mb-4 text-center" data-oid="iz93--1">
+                            <div className="text-4xl mb-4 text-center">
                                 {post.image}
                             </div>
-                            <div className="flex items-center gap-2 mb-3" data-oid="ugkhioh">
-                                <span className="text-purple-300 text-xs" data-oid="ocbgf52">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-purple-300 text-xs">
                                     {post.date}
                                 </span>
-                                <span className="text-purple-300 text-xs" data-oid="1bhv2ud">
+                                <span className="text-purple-300 text-xs">
                                     •
                                 </span>
-                                <span className="text-purple-300 text-xs" data-oid="4y3-e7-">
+                                <span className="text-purple-300 text-xs">
                                     {post.readTime} de leitura
                                 </span>
                             </div>
-                            <h3
-                                className="text-xl font-semibold mb-3 text-teal-300 line-clamp-2"
-                                data-oid="fevok72"
-                            >
+                            <h3 className="text-xl font-semibold mb-3 text-teal-300 line-clamp-2">
                                 {post.title}
                             </h3>
-                            <p
-                                className="text-purple-200 text-sm mb-4 line-clamp-3"
-                                data-oid="7-qfeww"
-                            >
+                            <p className="text-purple-200 text-sm mb-4 line-clamp-3">
                                 {post.excerpt}
                             </p>
                             <Link
                                 href={`/blog/${post.id}`}
                                 className="text-teal-300 hover:text-teal-200 transition-colors text-sm font-medium"
-                                data-oid="qg4y8oi"
                             >
                                 Ler mais →
                             </Link>
@@ -238,38 +246,35 @@ export default function BlogPage() {
                 </div>
 
                 {/* Newsletter Signup */}
-                <div
-                    className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 text-center"
-                    data-oid="ciamer7"
-                >
-                    <h2 className="text-3xl font-light mb-6 text-teal-300" data-oid="xct3:cz">
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 text-center">
+                    <h2 className="text-3xl font-light mb-6 text-teal-300">
                         Receba Nossos Insights
                     </h2>
-                    <p
-                        className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto"
-                        data-oid="1azs5ip"
-                    >
+                    <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
                         Assine nossa newsletter e receba semanalmente conteúdo exclusivo sobre o
                         mercado de vinhos e tendências do setor HORECA.
                     </p>
-                    <div
+                    <form
+                        onSubmit={handleNewsletterSubmit}
                         className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
-                        data-oid="zjvfwmx"
                     >
                         <input
                             type="email"
                             placeholder="Seu melhor e-mail"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
                             className="flex-1 px-6 py-3 rounded-full bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:border-teal-300"
-                            data-oid="atiogm1"
                         />
 
                         <button
-                            className="px-8 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-400 transition-colors font-medium"
-                            data-oid=".8dm1vv"
+                            type="submit"
+                            disabled={isSubscribing}
+                            className="px-8 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-400 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Assinar
+                            {isSubscribing ? 'Inscrevendo...' : 'Assinar'}
                         </button>
-                    </div>
+                    </form>
                 </div>
             </section>
         </div>
