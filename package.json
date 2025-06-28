@@ -7,13 +7,9 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "format": "prettier --write .",
-        "db:generate": "prisma generate",
-        "db:push": "prisma db push",
-        "db:studio": "prisma studio"
+        "format": "prettier --write ."
     },
     "dependencies": {
-        "@prisma/client": "^5.7.1",
         "@radix-ui/react-slot": "^1.1.0",
         "@types/bcryptjs": "^2.4.6",
         "@types/jsonwebtoken": "^9.0.5",
@@ -42,7 +38,6 @@
         "eslint-config-next": "^15.1.6",
         "postcss": "^8",
         "prettier": "^3.3.3",
-        "prisma": "^5.7.1",
         "tailwindcss": "^3.4.1",
         "typescript": "^5"
     }

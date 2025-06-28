@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createNewsletterSubscription } from '@/lib/storage';
 import { newsletterSchema } from '@/lib/validations';
 import { sendEmail, getNewsletterWelcomeEmail } from '@/lib/email';
 
@@ -10,44 +10,36 @@ export async function POST(request: NextRequest) {
         // Validar dados
         const validatedData = newsletterSchema.parse(body);
 
-        // Verificar se email já existe
-        const existingSubscriber = await prisma.newsletter.findUnique({
-            where: { email: validatedData.email },
+        // Criar inscrição
+        const newsletter = createNewsletterSubscription({
+            email: validatedData.email,
+            name: validatedData.name,
+            active: true,
         });
 
-        if (existingSubscriber) {
-            if (existingSubscriber.active) {
-                return NextResponse.json(
-                    { success: false, error: 'Email já cadastrado na newsletter' },
-                    { status: 400 }
-                );
-            } else {
-                // Reativar inscrição
-                await prisma.newsletter.update({
-                    where: { email: validatedData.email },
-                    data: { active: true },
+        // Enviar email de boas-vindas (apenas se configurado)
+        if (process.env.EMAIL_FROM) {
+            try {
+                await sendEmail({
+                    to: validatedData.email,
+                    subject: 'Bem-vindo à Newsletter Mar de Vinhos!',
+                    html: getNewsletterWelcomeEmail(validatedData.email),
                 });
+            } catch (emailError) {
+                console.error('Erro ao enviar email:', emailError);
+                // Continuar mesmo se o email falhar
             }
-        } else {
-            // Criar nova inscrição
-            await prisma.newsletter.create({
-                data: {
-                    email: validatedData.email,
-                    name: validatedData.name,
-                    active: true,
-                },
-            });
         }
-
-        // Enviar email de boas-vindas
-        await sendEmail({
-            to: validatedData.email,
-            subject: 'Bem-vindo à Newsletter Mar de Vinhos!',
-            html: getNewsletterWelcomeEmail(validatedData.email),
-        });
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        if (error instanceof Error && error.message === 'Email já cadastrado na newsletter') {
+            return NextResponse.json(
+                { success: false, error: error.message },
+                { status: 400 }
+            );
+        }
+        
         console.error('Erro ao inscrever na newsletter:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno do servidor' },
